@@ -17,10 +17,7 @@ func (a *app) makeRequest(ctx context.Context, m *types.Message) (*types.LogEntr
 		a.L.Error(fmt.Sprintf("error from http.NewReqWCtx: %v", err))
 		// handle error
 	}
-
-	// I was never really clear to what the logged `delivery time` and `response time`
-	// referred. In normal conditions of course, I'd ask, but everyone's busy, and it's just an exhibition,
-	// so I made the deliberate choice to just to settle for an arbitrary best guess.
+	
 	deliveryTime := time.Now()
 	res, err := a.cl.Do(req)
 	responseTime := time.Now()
