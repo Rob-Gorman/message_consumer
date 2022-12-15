@@ -1,0 +1,7 @@
+# Build stage
+FROM golang:1.18-alpine AS build
+
+WORKDIR /app
+COPY ./go.mod ./go.mod
+
+RUN go mod download
