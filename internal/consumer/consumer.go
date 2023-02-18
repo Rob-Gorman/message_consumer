@@ -2,7 +2,7 @@ package consumer
 
 import (
 	"context"
-	"delivery/types"
+	"delivery/internal/types"
 )
 
 // MessageConsumer is the queue subscriber shape the Delivery Agent app

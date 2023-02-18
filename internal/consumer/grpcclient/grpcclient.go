@@ -2,9 +2,9 @@ package grpcclient
 
 import (
 	"context"
-	"delivery/logger"
+	"delivery/internal/logger"
+	"delivery/internal/types"
 	"delivery/proto"
-	"delivery/types"
 	"fmt"
 	"io"
 	"sync"

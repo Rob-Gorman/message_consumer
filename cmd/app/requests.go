@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"delivery/types"
+	"delivery/internal/types"
 	"fmt"
 	"net/http"
 	"time"

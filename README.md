@@ -1,4 +1,6 @@
-This is a message consumer for messages that indicate endpoints to which to make requests. I initially implemented a direct-to-redis connection, and then decided on a gRPC streaming API instead.
+# Queue Worker
+
+This is a message consumer for messages that indicate endpoints to which to make requests. 
 
 The queue implementation must satisfy the `MessageConsumer` interface:
 
@@ -18,11 +20,11 @@ type MessageConsumer interface {
 }
 ```
 
-`app.New()` instantiates a specific queue implementation according to a config variable (hardcoded here for convenience)
+`app.New(queue, logger)` instantiates a specific queue implementation according to a config variable (hardcoded here for convenience)
 
 `app.Run()` reads from the queue and concurrently processes multiple requests.
 
-Because HTTP requests are expensive latency-wise, fanning out the processes to multiple workers makes sense. `WorkerCount` is how we bound how many concurrent goroutines we're spinning up. The variable is currently hardcoded to `runtime.NumCPU()` as a starting point, but is probably a good place to begin tweaking performance. I'd guess more would be better since the process is mostly waiting.
+Because HTTP requests are mostly just waiting, fanning out the processes to multiple workers makes sense. `WorkerCount` is how we bound how many concurrent goroutines we're spinning up. The variable is currently hardcoded to `2 * runtime.NumCPU()` as a starting point, but is probably a good place to begin tweaking performance. I'd guess more would be better since the process is mostly idling.
 
 ```go
 sem := make(chan struct{}, a.WorkerCount) // buffered to limit goroutines

@@ -2,11 +2,9 @@ package app
 
 import (
 	"context"
-	"delivery/consumer"
-	"delivery/consumer/grpcclient"
-	"delivery/consumer/redis"
-	"delivery/logger"
-	"delivery/types"
+	"delivery/internal/consumer"
+	"delivery/internal/logger"
+	"delivery/internal/types"
 	"net/http"
 	"runtime"
 	"sync"
@@ -14,24 +12,23 @@ import (
 )
 
 var (
-	queue       = "grpc"
-	workerCount = runtime.NumCPU() // reasonable starting point IMO
-	httpTimeout = 5000             // milliseconds
+	workerCount = 2 * runtime.NumCPU() // reasonable starting point IMO
+	httpTimeout = 5000                 // milliseconds
 )
 
 type app struct {
-	Log           logger.AppLogger
-	queue           consumer.MessageConsumer
-	client          *http.Client
+	Log         logger.AppLogger
+	queue       consumer.MessageConsumer
+	client      *http.Client
 	WorkerCount int
 }
 
-func New(ctx context.Context) *app {
-	logger := logger.New()
+// factory function for App instance
+func New(l logger.AppLogger, q consumer.MessageConsumer) *app {
 	return &app{
-		Log:           logger,
-		queue:           messageConsumer(ctx, queue, logger),
-		client:          &http.Client{Timeout: time.Duration(httpTimeout) * time.Millisecond},
+		Log:         l,
+		queue:       q,
+		client:      &http.Client{Timeout: time.Duration(httpTimeout) * time.Millisecond},
 		WorkerCount: workerCount,
 	}
 }
@@ -66,21 +63,10 @@ func (a *app) Run(ctx context.Context) {
 				return
 			}
 
-			ack <- m.AckID   // ack message
+			ack <- m.AckID     // ack message
 			a.Log.Entry(entry) // delivery log
 		}(msg)
 	}
 
 	wg.Wait() // only blocks after ch closed
-}
-
-// instantiates implementation of `consumer.MessageConsumer`` specified by q parameter
-func messageConsumer(ctx context.Context, q string, l logger.AppLogger) consumer.MessageConsumer {
-	switch q {
-	case "redis":
-		return redis.New(l)
-	case "grpc":
-		return grpcclient.New(ctx, l)
-	}
-	return grpcclient.New(ctx, l)
 }

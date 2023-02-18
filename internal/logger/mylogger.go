@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"delivery/types"
+	"delivery/internal/types"
 	"log"
 	"os"
 )

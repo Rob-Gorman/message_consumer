@@ -2,7 +2,8 @@ package main
 
 import (
 	"delivery/cmd/app"
-	"os"
+	"delivery/internal/consumer/grpcclient"
+	"delivery/internal/logger"
 	"os/signal"
 	"syscall"
 
@@ -14,10 +15,13 @@ func main() {
 		context.Background(),
 		syscall.SIGTERM,
 		syscall.SIGQUIT,
-		os.Interrupt,
+		syscall.SIGINT,
 	)
 	defer cancel()
 
-	app := app.New(ctx)
+	l := logger.New()
+	gc := grpcclient.New(ctx, l)
+	app := app.New(l, gc)
+
 	app.Run(ctx) // blocking while message channel is open
 }

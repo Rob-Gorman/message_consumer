@@ -1,6 +1,6 @@
 package logger
 
-import "delivery/types"
+import "delivery/internal/types"
 
 // Modularity for the logger is likely unnecessary, particularly because
 // changes in logger implementation are unlikely, and if it happens,
