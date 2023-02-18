@@ -14,23 +14,23 @@ import (
 func (a *app) makeRequest(ctx context.Context, m *types.Message) (*types.LogEntry, error) {
 	req, err := http.NewRequestWithContext(ctx, m.Method, m.URL, nil)
 	if err != nil {
-		a.L.Error(fmt.Sprintf("error from http.NewReqWCtx: %v", err))
+		a.Log.Error(fmt.Sprintf("error from http.NewReqWCtx: %v", err))
 		// handle error
 	}
 	
 	deliveryTime := time.Now()
-	res, err := a.cl.Do(req)
+	res, err := a.client.Do(req)
 	responseTime := time.Now()
 
 	if err != nil {
-		a.L.Error(fmt.Sprintf("req failed waiting %v, timeout %v: %v", time.Since(deliveryTime), a.cl.Timeout, err))
+		a.Log.Error(fmt.Sprintf("req failed waiting %v, timeout %v: %v", time.Since(deliveryTime), a.client.Timeout, err))
 		return nil, err
 	}
 
 	body := []byte{}
 	_, err = res.Body.Read(body)
 	if err != nil {
-		a.L.Error(fmt.Sprintf("failed to parse response body %v", err))
+		a.Log.Error(fmt.Sprintf("failed to parse response body %v", err))
 		// LogEntry otherwise created with empty body
 	}
 

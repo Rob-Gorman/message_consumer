@@ -20,18 +20,18 @@ var (
 )
 
 type app struct {
-	L           logger.AppLogger
-	q           consumer.MessageConsumer
-	cl          *http.Client
+	Log           logger.AppLogger
+	queue           consumer.MessageConsumer
+	client          *http.Client
 	WorkerCount int
 }
 
 func New(ctx context.Context) *app {
 	logger := logger.New()
 	return &app{
-		L:           logger,
-		q:           messageConsumer(ctx, queue, logger),
-		cl:          &http.Client{Timeout: time.Duration(httpTimeout) * time.Millisecond},
+		Log:           logger,
+		queue:           messageConsumer(ctx, queue, logger),
+		client:          &http.Client{Timeout: time.Duration(httpTimeout) * time.Millisecond},
 		WorkerCount: workerCount,
 	}
 }
@@ -39,11 +39,11 @@ func New(ctx context.Context) *app {
 // Run is the entry point to the Delivery Agent.
 // Run is blocking until shutdown, or the message channel is otherwise closed
 func (a *app) Run(ctx context.Context) {
-	ch := a.q.NewMessageChannel(ctx)
+	ch := a.queue.NewMessageChannel(ctx)
 	ack := make(chan interface{}) // initialize chan for ack id's
 	defer close(ack)
 
-	a.q.AckMessages(ctx, ack)
+	a.queue.AckMessages(ctx, ack)
 
 	// ensures goroutines can complete when `ch` closes
 	var wg sync.WaitGroup
@@ -61,13 +61,13 @@ func (a *app) Run(ctx context.Context) {
 
 			entry, err := a.makeRequest(ctx, m)
 			if err != nil {
-				a.L.Error("failed to process message request", err.Error())
+				a.Log.Error("failed to process message request", err.Error())
 				// message simply unprocessed and unacked - questionable
 				return
 			}
 
 			ack <- m.AckID   // ack message
-			a.L.Entry(entry) // delivery log
+			a.Log.Entry(entry) // delivery log
 		}(msg)
 	}
 
